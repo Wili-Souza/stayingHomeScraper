@@ -4,6 +4,10 @@ import requests
 
 usual_local_strings = ["Sede", "Endereço"]
 
+# ---- Work in progress 
+#* Google -> not working so far (?)
+#* Linkedin -> fail -> does not allow scraping | ip may be blocked | needs to be logged
+
 #
 """ print("looking for country or place...")
     if " " in name.strip():
@@ -43,81 +47,3 @@ usual_local_strings = ["Sede", "Endereço"]
     print("NAO ENCONTRADO")
     return "?"
 """
-
-def findCountry(name):
-    print("looking for country or place...")
-    if " " in name.strip():
-        name = name.strip().replace(" ", "+")
-
-        #log in linkedin
-    #create a session
-    client = requests.Session()
-
-    #create url page variables
-    HOMEPAGE_URL = 'https://www.linkedin.com'
-    LOGIN_URL = 'https://www.linkedin.com/uas/login-submit'
-    CONNECTIONS_URL = 'https://www.linkedin.com/mynetwork/invite-connect/connections/'
-    ASPIRING_DATA_SCIENTIEST = 'https://www.linkedin.com/search/results/people/?keywords=Aspiring%20Data%20Scientist&origin=GLOBAL_SEARCH_HEADER'
-
-    #get url, soup object and csrf token value
-    html = client.get(HOMEPAGE_URL).content
-    soup = BeautifulSoup(html, "html.parser")
-    csrf = soup.find('input', dict(name='loginCsrfParam'))['value']
-
-    #create login parameters
-    login_information = {
-        'session_key':'wiliane_souza@hotmail.com',
-        'session_password':'batom123',
-        'loginCsrfParam': csrf,
-    }
-
-    #try and login
-    try:
-        client.post(LOGIN_URL, data=login_information)
-        print("Login Successful")
-    except:
-        print("Failed to Login")
-
-
-
-        #pegando o link do linkedin da empresa
-    try:
-        response = client.get(f'https://www.linkedin.com/search/results/all/?keywords={name}')
-        soup = BeautifulSoup(response.text, 'html.parser')
-    except:
-        print('Erro ao conectar-se com a página')
-        return "?"
-
-    #extraindo link da lista
-    try:
-        linkedin = soup.select_one("a.search-result__result-link.ember-view").get('href')
-    except AttributeError:
-        print(soup)
-        return "?"
-
-    if linkedin == None:
-        print("LINKEDIN N ENCONTRADO")
-        return "?"
-    
-    #Conectando a pág do linkedin da empresa
-    try:
-        html = requests.get(linkedin)
-        soup = BeautifulSoup(html.text, 'html.parser')
-    except:
-        print('Erro ao conectar-se com a página do linkedin')
-        return "?"
-
-    #extraindo localidade:
-    info_list = soup.select_one(".org-top-card-summary-info-list").select("div")
-
-    if info_list is not None:
-        local = info_list[1].select_one("div").text
-        if local is not None:
-            return local
-        else:
-            return "?"
-    else:
-        print("NAO ENCONTRADO")
-        return "?"
-
-    
